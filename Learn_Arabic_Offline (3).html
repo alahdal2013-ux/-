@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق حروف الهجاء الاحترافي</title>
+    <style>
+        /* تم استبدال Tailwind بـ CSS مدمج لضمان عمل التطبيق بدون أي اتصال بالإنترنت */
+        :root {
+            --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --text-muted: #94a3b8;
+            --gold: #bf953f; --gold-light: #fcf6ba; --gold-dark: #aa771c;
+        }
+        body {
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif;
+            background-color: var(--bg); color: var(--text);
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+        }
+        .lux-font { font-family: 'Amiri', 'Traditional Arabic', serif; }
+        
+        /* Typography & Layout */
+        header { text-align: center; margin-bottom: 30px; width: 100%; max-width: 900px; }
+        h1 { font-size: 2.5rem; margin: 0 0 10px 0; font-weight: 900; }
+        .gold-gradient {
+            background: linear-gradient(to right, var(--gold), var(--gold-light), var(--gold), var(--gold-light), var(--gold-dark));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        p.subtitle { color: var(--text-muted); font-size: 1.2rem; margin: 0; }
+        
+        main { width: 100%; max-width: 900px; display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; }
+        .col-right { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 20px; }
+        .col-left { flex: 2; min-width: 300px; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Display Card */
+        .display-card {
+            background-color: var(--surface); border: 2px solid var(--gold); border-radius: 24px;
+            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 20px rgba(191, 149, 63, 0.2); position: relative; overflow: hidden;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        #mainLetter { font-size: 8rem; font-weight: bold; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        
+        /* Buttons */
+        button { font-family: inherit; cursor: pointer; border: none; outline: none; transition: all 0.2s; }
+        button:active { transform: scale(0.95); }
+        
+        .btn-action {
+            width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-download {
+            background: linear-gradient(to right, var(--gold), var(--gold-light), var(--gold));
+            color: #000; box-shadow: 0 0 15px rgba(191,149,63,0.4);
+        }
+        .btn-download:hover { opacity: 0.9; }
+        
+        .btn-autoplay {
+            background-color: #334155; color: white; border: 2px solid #475569;
+        }
+        .btn-autoplay:hover { background-color: #475569; }
+        .btn-autoplay.active-play { background-color: #10b981; border-color: #059669; color: white; animation: pulse 2s infinite; }
+        
+        /* Control Panels */
+        .panel { background-color: var(--surface); padding: 24px; border-radius: 20px; border: 1px solid #334155; }
+        .panel h2 { font-size: 1.25rem; margin: 0 0 15px 0; color: #cbd5e1; }
+        
+        .harakat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .btn-harakah {
+            padding: 12px 5px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; background: #334155; border: 1px solid;
+        }
+        .btn-harakah:hover { filter: brightness(1.2); }
+        .h-fatha { color: #ef4444; border-color: #ef4444; } .h-damma { color: #3b82f6; border-color: #3b82f6; }
+        .h-kasra { color: #22c55e; border-color: #22c55e; } .h-sukun { color: #9ca3af; border-color: #9ca3af; }
+        .h-mada { color: #f97316; border-color: #f97316; font-size: 1.2rem; }
+        .h-madw { color: #06b6d4; border-color: #06b6d4; font-size: 1.2rem; }
+        .h-mady { color: #10b981; border-color: #10b981; font-size: 1.2rem; }
+        
+        .letters-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; direction: rtl; }
+        .letter-btn {
+            padding: 10px 5px; font-size: 1.8rem; font-weight: bold; background: transparent; color: #e2e8f0;
+            border: 1px solid #475569; border-radius: 8px;
+        }
+        .letter-btn:hover { background: #334155; border-color: var(--gold-light); }
+        .letter-btn.active { background: var(--gold); color: #000; border-color: var(--gold-light); }
+        
+        @media (max-width: 600px) {
+            .letters-grid { grid-template-columns: repeat(5, 1fr); }
+            #mainLetter { font-size: 6rem; }
+        }
+        
+        /* Animations */
+        .flash-animation { animation: flash 0.5s ease-out; }
+        @keyframes flash {
+            0% { box-shadow: 0 0 0px transparent; background-color: var(--surface); }
+            50% { box-shadow: 0 0 40px var(--flash-color); background-color: var(--flash-color-light); }
+            100% { box-shadow: 0 0 20px rgba(191, 149, 63, 0.2); background-color: var(--surface); }
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="gold-gradient">تعلم حروف الهجاء</h1>
+        <p class="subtitle">تطبيق تفاعلي يعمل بدون إنترنت (تلقائي / يدوي)</p>
+    </header>
+
+    <main>
+        <!-- Interactive Display Card -->
+        <div class="col-right">
+            <div id="displayCard" class="display-card flash-animation" style="--flash-color: rgba(239, 68, 68, 1); --flash-color-light: rgba(239, 68, 68, 0.2);">
+                <span id="mainLetter" class="lux-font text-white">أَ</span>
+            </div>
+
+            <!-- Auto Play Button -->
+            <button id="autoPlayBtn" onclick="toggleAutoPlay()" class="btn-action btn-autoplay">
+                ▶ تشغيل تلقائي للحروف
+            </button>
+
+            <!-- Download Offline Button (Direct Link) -->
+            <button onclick="downloadOfflineApp()" class="btn-action btn-download">
+                ⬇ تنزيل التطبيق (للعمل بدون نت)
+            </button>
+        </div>
+
+        <!-- Controls Area -->
+        <div class="col-left">
+            <!-- Harakat & Madoud (Vowels) -->
+            <div class="panel">
+                <h2>اختر الحركة أو المد:</h2>
+                
+                <div class="harakat-grid">
+                    <button onclick="setHarakah('fatha')" class="btn-harakah h-fatha">ــَـ</button>
+                    <button onclick="setHarakah('damma')" class="btn-harakah h-damma">ــُـ</button>
+                    <button onclick="setHarakah('kasra')" class="btn-harakah h-kasra">ــِـ</button>
+                    <button onclick="setHarakah('sukun')" class="btn-harakah h-sukun">ــْـ</button>
+                </div>
+                
+                <div class="harakat-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <button onclick="setHarakah('madA')" class="btn-harakah h-mada">مد الألف</button>
+                    <button onclick="setHarakah('madW')" class="btn-harakah h-madw">مد الواو</button>
+                    <button onclick="setHarakah('madY')" class="btn-harakah h-mady">مد الياء</button>
+                </div>
+            </div>
+
+            <!-- Alphabet Grid -->
+            <div class="panel">
+                <h2>اختر الحرف:</h2>
+                <div id="lettersGrid" class="letters-grid"><button class="letter-btn lux-font active">أ</button><button class="letter-btn lux-font ">ب</button><button class="letter-btn lux-font ">ت</button><button class="letter-btn lux-font ">ث</button><button class="letter-btn lux-font ">ج</button><button class="letter-btn lux-font ">ح</button><button class="letter-btn lux-font ">خ</button><button class="letter-btn lux-font ">د</button><button class="letter-btn lux-font ">ذ</button><button class="letter-btn lux-font ">ر</button><button class="letter-btn lux-font ">ز</button><button class="letter-btn lux-font ">س</button><button class="letter-btn lux-font ">ش</button><button class="letter-btn lux-font ">ص</button><button class="letter-btn lux-font ">ض</button><button class="letter-btn lux-font ">ط</button><button class="letter-btn lux-font ">ظ</button><button class="letter-btn lux-font ">ع</button><button class="letter-btn lux-font ">غ</button><button class="letter-btn lux-font ">ف</button><button class="letter-btn lux-font ">ق</button><button class="letter-btn lux-font ">ك</button><button class="letter-btn lux-font ">ل</button><button class="letter-btn lux-font ">م</button><button class="letter-btn lux-font ">ن</button><button class="letter-btn lux-font ">ه</button><button class="letter-btn lux-font ">و</button><button class="letter-btn lux-font ">ي</button></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const arabicAlphabet = [
+            'أ', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 
+            'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
+        ];
+
+        // إعدادات الحركات مع التحكم بسرعة النطق (rate) لإطالة المدود
+        const harakatConfig = {
+            'fatha': { char: 'َ', suffix: '', color: 'rgba(239, 68, 68, 1)', lightColor: 'rgba(239, 68, 68, 0.2)', rate: 0.9 },
+            'damma': { char: 'ُ', suffix: '', color: 'rgba(59, 130, 246, 1)', lightColor: 'rgba(59, 130, 246, 0.2)', rate: 0.9 },
+            'kasra': { char: 'ِ', suffix: '', color: 'rgba(34, 197, 94, 1)', lightColor: 'rgba(34, 197, 94, 0.2)', rate: 0.9 },
+            'sukun': { char: 'ْ', suffix: '', color: 'rgba(156, 163, 175, 1)', lightColor: 'rgba(156, 163, 175, 0.2)', rate: 0.9 },
+            'madA':  { char: 'َ', suffix: 'ا', color: 'rgba(249, 115, 22, 1)', lightColor: 'rgba(249, 115, 22, 0.2)', rate: 0.55 }, // سرعة أبطأ لإعطاء إيحاء بالمد الطبيعي
+            'madW':  { char: 'ُ', suffix: 'و', color: 'rgba(6, 182, 212, 1)', lightColor: 'rgba(6, 182, 212, 0.2)', rate: 0.55 }, 
+            'madY':  { char: 'ِ', suffix: 'ي', color: 'rgba(16, 185, 129, 1)', lightColor: 'rgba(16, 185, 129, 0.2)', rate: 0.55 }  
+        };
+
+        let currentLetter = 'أ';
+        let currentHarakahKey = 'fatha';
+        let autoPlayInterval = null;
+        let autoPlayIndex = 0;
+
+        const gridEl = document.getElementById('lettersGrid');
+        const mainLetterEl = document.getElementById('mainLetter');
+        const displayCardEl = document.getElementById('displayCard');
+        const autoPlayBtn = document.getElementById('autoPlayBtn');
+
+        function init() {
+            gridEl.innerHTML = '';
+            arabicAlphabet.forEach((letter, index) => {
+                const btn = document.createElement('button');
+                btn.className = `letter-btn lux-font ${letter === currentLetter ? 'active' : ''}`;
+                btn.innerText = letter;
+                btn.onclick = () => {
+                    stopAutoPlay();
+                    setLetter(letter, btn, index);
+                };
+                gridEl.appendChild(btn);
+            });
+            updateDisplay(false); // تحديث بدون نطق مبدئي لتجنب حظر المتصفح
+        }
+
+        function setLetter(letter, btnElement, index) {
+            currentLetter = letter;
+            autoPlayIndex = index;
+            
+            document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+            
+            updateDisplay(true);
+        }
+
+        function setHarakah(key) {
+            currentHarakahKey = key;
+            updateDisplay(true);
+        }
+
+        function updateDisplay(playAudioFlag = true) {
+            const config = harakatConfig[currentHarakahKey];
+            
+            let displayString = "";
+            let textToSpeak = "";
+
+            // معالجة خاصة لحرف الألف لضمان صحة الكتابة (همزة فوق/تحت/ممدودة) وصحة النطق
+            if (currentLetter === 'أ') {
+                if (currentHarakahKey === 'fatha') displayString = 'أَ';
+                else if (currentHarakahKey === 'damma') displayString = 'أُ';
+                else if (currentHarakahKey === 'kasra') displayString = 'إِ';
+                else if (currentHarakahKey === 'sukun') displayString = 'أْ';
+                else if (currentHarakahKey === 'madA') displayString = 'آ';
+                else if (currentHarakahKey === 'madW') displayString = 'أُو';
+                else if (currentHarakahKey === 'madY') displayString = 'إِي';
+            } else {
+                displayString = currentLetter + config.char + config.suffix;
+            }
+
+            // إرسال النص المعروض كما هو لمحرك النطق، كونه التشكيل الصوتي الأدق
+            // الاعتماد الآن على تقليل سرعة النطق (rate) المبرمجة في الأعلى بدلاً من تكرار الحروف
+            textToSpeak = displayString;
+
+            mainLetterEl.innerText = displayString;
+
+            // Trigger Flash Animation
+            displayCardEl.style.setProperty('--flash-color', config.color);
+            displayCardEl.style.setProperty('--flash-color-light', config.lightColor);
+            
+            displayCardEl.classList.remove('flash-animation');
+            void displayCardEl.offsetWidth; // trigger reflow
+            displayCardEl.classList.add('flash-animation');
+
+            if(playAudioFlag) {
+                playAudio(textToSpeak, config.rate);
+            }
+        }
+
+        // دالة نطق الصوت (نظام هجين: جودة عالية سحابية للإنترنت، وبديل آلي بدون إنترنت)
+        let currentOnlineAudio = null;
+        
+        function playAudio(text, rate) {
+            // 1. إيقاف أي صوت آلي سابق
+            window.speechSynthesis.cancel();
+            
+            // 2. إيقاف أي صوت سحابي سابق لتجنب تداخل الأصوات
+            if (currentOnlineAudio) {
+                currentOnlineAudio.pause();
+                currentOnlineAudio.currentTime = 0;
+            }
+
+            // 3. التحقق من وجود إنترنت لاستخدام الصوت الاحترافي
+            if (navigator.onLine) {
+                try {
+                    // سحب الصوت البشري النقي من محركات جوجل (ممتاز جداً لتعليم الأطفال)
+                    const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=${encodeURIComponent(text)}`;
+                    currentOnlineAudio = new Audio(url);
+                    
+                    // تعديل سرعة الصوت: إذا كان مداً طويلاً نبطئ الصوت ليتضح المد للمتعلم
+                    currentOnlineAudio.playbackRate = rate < 0.8 ? 0.65 : 1.0; 
+                    
+                    // تشغيل الصوت السحابي، وإذا تم حظره ننتقل للبديل الآلي
+                    currentOnlineAudio.play().catch(e => {
+                        playOfflineAudio(text, rate);
+                    });
+                } catch (e) {
+                    playOfflineAudio(text, rate);
+                }
+            } else {
+                // 4. في حالة عدم وجود إنترنت (Offline)، يتم استخدام نطق الجهاز كبديل
+                playOfflineAudio(text, rate);
+            }
+        }
+
+        // دالة نطق الطوارئ (تعتمد على نظام التشغيل وتعمل بدون نت)
+        function playOfflineAudio(text, rate) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ar-SA'; 
+            utterance.rate = rate;    
+            utterance.pitch = 1.0; 
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- ميزة التشغيل التلقائي ---
+        function toggleAutoPlay() {
+            if (autoPlayInterval) {
+                stopAutoPlay();
+            } else {
+                autoPlayBtn.innerHTML = '⏸ إيقاف التلقائي';
+                autoPlayBtn.classList.add('active-play');
+                
+                updateDisplay(true); // نطق الحرف الحالي
+                
+                autoPlayInterval = setInterval(() => {
+                    autoPlayIndex++;
+                    if (autoPlayIndex >= arabicAlphabet.length) {
+                        autoPlayIndex = 0; // العودة للبداية
+                    }
+                    const nextLetter = arabicAlphabet[autoPlayIndex];
+                    const btnElement = gridEl.children[autoPlayIndex];
+                    
+                    currentLetter = nextLetter;
+                    document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('active'));
+                    if(btnElement) btnElement.classList.add('active');
+                    
+                    updateDisplay(true);
+                }, 2500); // الانتقال كل ثانيتين ونصف
+            }
+        }
+
+        function stopAutoPlay() {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+                autoPlayBtn.innerHTML = '▶ تشغيل تلقائي للحروف';
+                autoPlayBtn.classList.remove('active-play');
+            }
+        }
+
+        // --- ميزة تنزيل التطبيق للعمل بدون إنترنت ---
+        function downloadOfflineApp() {
+            // أخذ نسخة كاملة من كود الصفحة الحالي
+            const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            // إنشاء رابط تنزيل والضغط عليه برمجياً
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Learn_Arabic_Offline.html'; // اسم الملف المحمل
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // إظهار رسالة نجاح
+            const msg = document.createElement('div');
+            msg.style.cssText = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#10b981; color:white; padding:15px 30px; border-radius:10px; z-index:9999; font-weight:bold; box-shadow:0 10px 25px rgba(0,0,0,0.3); font-family:Tajawal, sans-serif;";
+            msg.innerText = "✅ تم تنزيل التطبيق! افتح الملف المحمل ليعمل بدون إنترنت.";
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 5000);
+        }
+
+        window.onload = init;
+    </script>
+
+</body></html>
